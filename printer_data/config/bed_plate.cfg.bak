@@ -1,0 +1,3 @@
+[bed_plate]
+bed_type = PEI_PLATE
+bed_temp = 60

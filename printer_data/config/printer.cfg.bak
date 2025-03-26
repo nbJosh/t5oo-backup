@@ -1,0 +1,307 @@
+# STM32F103 with a "28KiB bootloader" and serial (on USART1 PA10/PA9)
+# communication.
+
+# If you prefer a direct serial connection, in "make menuconfig"
+# select "Enable extra low-level configuration options" and select
+# serial (on USART3 PB11/PB10), which is broken out on the 10 pin IDC
+# cable used for the LCD module as follows:
+# 3: Tx, 4: Rx, 9: GND, 10: VCC
+
+
+# See docs/Config_Reference.md for a description of parameters.
+
+[include plr.cfg]
+[include mainsail.cfg]
+[include fluidd.cfg]
+[include Macro.cfg]
+[include timelapse.cfg]
+
+[exclude_object]
+
+[temperature_sensor mcu_temp]         
+sensor_type: temperature_mcu
+min_temp:0
+max_temp:100
+
+[temperature_sensor Host_temp]     
+sensor_type: temperature_host
+min_temp: 0
+max_temp: 110
+
+[mcu]
+serial:/dev/klipper_mcu
+restart_method: command
+
+[printer]
+kinematics: cartesian
+max_velocity: 300
+max_accel: 8000
+max_accel_to_decel:1500
+max_z_velocity: 15
+max_z_accel: 100
+square_corner_velocity:3
+
+[virtual_sdcard] 
+path:/home/mks/printer_data/gcodes
+
+[pause_resume]
+
+[display_status]
+
+[idle_timeout]
+gcode:_IDLE_TIMEOUT
+timeout: 600
+
+[mcu rpi]
+serial: /tmp/klipper_host_mcu
+
+[adxl345]
+cs_pin: rpi:None
+spi_bus: spidev0.0
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    230, 230, 20  # an example
+accel_per_hz:50
+min_freq:1
+max_freq:100
+max_smoothing:0.2
+hz_per_sec:0.5
+
+[verify_heater extruder]
+max_error: 60
+check_gain_time:20
+hysteresis: 5
+heating_gain: 2
+
+[verify_heater heater_bed]
+max_error: 240
+check_gain_time:180
+hysteresis: 5
+heating_gain: 2
+
+[respond]
+
+[stepper_x]
+step_pin: PE2
+dir_pin: PE0
+enable_pin: !PE3
+microsteps: 16
+rotation_distance: 72
+endstop_pin: ^PE15
+position_endstop: -5
+position_min: -5
+position_max: 505
+homing_speed: 120
+step_pulse_duration:0.000002
+
+[tmc2209 stepper_x]
+uart_pin: PE1
+run_current: 1.4
+uart_address: 3
+
+[stepper_y]
+step_pin: PB8
+dir_pin: !PB6
+enable_pin: !PB9
+microsteps: 16
+rotation_distance: 72
+endstop_pin: ^PE13 
+position_endstop: -2
+position_min: -2
+position_max: 502
+homing_speed: 90
+step_pulse_duration:0.000002
+
+[tmc2209 stepper_y]
+uart_pin: PB7
+run_current: 1.5
+uart_address: 3
+
+[stepper_y1]
+step_pin:PD7
+dir_pin:PD0
+enable_pin:!PB5
+microsteps:16
+rotation_distance:72
+endstop_pin: ^PE13
+
+[tmc2209 stepper_y1]
+uart_pin:PD1
+run_current:1.5 
+uart_address:3
+
+[stepper_z]
+step_pin: PD15
+dir_pin: !PD13
+enable_pin: !PA12
+microsteps: 16
+rotation_distance: 4
+endstop_pin:probe:z_virtual_endstop
+position_max: 505
+position_min: -5
+homing_speed: 5
+
+[tmc2209 stepper_z]
+uart_pin:PD14
+run_current:0.6
+uart_address:3
+stealthchop_threshold: 999999
+
+[stepper_z1]
+step_pin: PD11
+dir_pin: !PD9
+enable_pin: !PD12
+microsteps: 16
+rotation_distance: 4
+endstop_pin:probe:z_virtual_endstop
+
+[tmc2209 stepper_z1]
+uart_pin:PD10
+run_current:0.6
+uart_address:3
+stealthchop_threshold: 999999
+
+[extruder]
+max_extrude_only_distance: 100.0
+step_pin: PC0
+dir_pin: PE5
+enable_pin: !PC1
+microsteps: 16
+rotation_distance: 3.55
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: PB1
+sensor_type: my_thermistor
+sensor_pin: PA4
+control: pid
+pressure_advance:0.008
+pressure_advance_smooth_time:0.035
+max_extrude_cross_section:500
+pid_Kp=22.252 
+pid_Ki=1.197 
+pid_Kd=99.905
+min_temp: 0
+max_temp: 305
+min_extrude_temp: 150
+max_extrude_cross_section:500
+instantaneous_corner_velocity:10
+max_extrude_only_distance: 100.0
+max_extrude_only_velocity:2000
+max_extrude_only_accel:10000
+
+[thermistor my_thermistor]
+temperature1:25
+resistance1:96000
+temperature2:150
+resistance2:1585.4
+temperature3:250
+resistance3:172.6
+
+[tmc2209 extruder]
+uart_pin: PE6
+run_current: 1.0
+uart_address:3
+interpolate: True
+
+[heater_bed]
+heater_pin: PA0
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC5
+control: pid
+# pid_Kp: 75.227
+# pid_Ki: 0.807
+# pid_Kd: 1748.382
+pid_kp = 76.052
+pid_ki = 0.949
+pid_kd = 1522.939
+min_temp: 0
+max_temp: 90
+
+[probe]
+pin:PE8
+x_offset:20
+y_offset:-24
+speed: 15.0
+speed: 5.0
+samples: 2
+sample_retract_dist: 2.0
+lift_speed: 50
+samples_result: average
+samples_tolerance: 0.016
+samples_tolerance_retries: 2
+
+[safe_z_home]
+home_xy_position: 230,274
+speed: 90
+z_hop: 5                 # Move up 5mm
+z_hop_speed: 5
+
+[bed_mesh]
+speed:180                
+horizontal_move_z:5   
+mesh_min:22,26   
+mesh_max:488,476 
+probe_count:11,11
+algorithm: bicubic   
+bicubic_tension: 0.2
+split_delta_z: 0.0125
+mesh_pps:4,4
+move_check_distance: 5
+fade_start: 0
+fade_end: 10
+fade_target: 0
+
+[z_tilt]
+z_positions: 5, 274
+             460, 274
+points: 5, 274
+        460, 274
+speed: 200
+horizontal_move_z: 5
+retries: 20
+retry_tolerance: .005
+
+[filament_switch_sensor filament_sensor]
+pause_on_runout: True
+event_delay: 3.0
+pause_delay: 0.5
+switch_pin:PE9
+
+[heater_fan hotend_fan]
+pin: PA2
+
+[fan]
+pin: PA1
+
+[output_pin my_led]
+pin:PA6
+pwm: 1
+value:1
+cycle_time: 0.01
+
+[controller_fan Fan_Board]
+pin:PA3
+fan_speed: 1.0
+idle_timeout: 120
+heater: heater_bed, extruder
+stepper: stepper_x, stepper_y, stepper_y1, stepper_z, stepper_z1
+
+[input_shaper]
+damping_ratio_x: 0.05
+damping_ratio_y: 0.1
+shaper_type_x = 3hump_ei
+shaper_freq_x = 52.4
+shaper_type_y = 2hump_ei
+shaper_freq_y = 25
+
+[bed_plate]
+bed_temp: 60
+
+#*# <---------------------- SAVE_CONFIG ---------------------->
+#*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
+#*#
+#*# [probe]
+#*# z_offset = 0
+
